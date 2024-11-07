@@ -8,6 +8,7 @@ build:
   stage: build
   image: node:22.11.0
   script:
+    - echo $PATH
     - npm install  # Install dependencies
   artifacts:
     paths:
