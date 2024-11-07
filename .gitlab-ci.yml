@@ -1,0 +1,37 @@
+#Defind Stage
+stages:
+  - build
+  - deploy
+
+# Job Build
+build:
+  stage: build
+  image: node:22.11.0
+  script:
+    - npm install  # Install dependencies
+  artifacts:
+    paths:
+      - node_modules/  # Menyimpan folder node_modules sebagai artifacts
+    expire_in: 1 hour  # Menyimpan artifacts selama 1 jam
+
+# Job Deploy
+deploy:
+  stage: deploy
+  image: node:22.11.0
+  script:
+    # Menyiapkan SSH key di pipeline
+    - mkdir -p ~/.ssh
+    - echo "$DEPLOY_SSH_KEY" > ~/.ssh/id_rsa  # Menggunakan private key dari variabel GitLab
+    - chmod 600 ~/.ssh/id_rsa  # Memastikan private key hanya bisa diakses oleh pemilik
+    - ssh-keyscan 172.100.10.22 >> ~/.ssh/known_hosts  # Menambahkan server ke known_hosts untuk menghindari prompt saat pertama kali login
+
+    # Melakukan deploy ke server
+    - |
+      ssh root@172.100.10.22 << 'EOF'
+        cd /var/www/html 
+        git pull origin main
+        npm install 
+        pm2 restart notes-app-back-end || pm2 start src/server.js --name "notes-app-back-end"  # Restart aplikasi dengan PM2
+      EOF
+  only:
+    - main  # Job deploy hanya dijalankan pada branch 'main'
