@@ -9,7 +9,11 @@ build:
   image: node:22.11.0
   script:
     - echo $PATH
-    - npm install  # Install dependencies
+    - which node  
+    - which npm   
+    - node -v    
+    - npm -v      
+    - npm install  
   artifacts:
     paths:
       - node_modules/  # Menyimpan folder node_modules sebagai artifacts
